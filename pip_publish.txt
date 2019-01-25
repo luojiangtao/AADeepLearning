@@ -1,0 +1,12 @@
+https://blog.csdn.net/fengmm521/article/details/79144407
+
+# 生成类似 edssdk-0.0.1-py2.7.egg，支持 easy_install
+# 生成类似 edssdk-0.0.1.tar.gz，支持 pip
+
+python setup.py bdist_egg
+python setup.py sdist
+twine upload dist/AADeepLearning-1.0.8.tar.gz --skip-existing
+pip install --upgrade --no-cache-dir AADeepLearning
+
+
+pip uninstall AADeepLearning
