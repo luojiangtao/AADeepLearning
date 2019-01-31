@@ -3,6 +3,8 @@ from aa_deep_learning.AADeepLearning import AADeepLearning
 from aa_deep_learning.AADeepLearning.datasets import cifar10
 from aa_deep_learning.AADeepLearning.datasets import np_utils
 
+# import numpy as np
+# np.random.seed(0)
 # 载入数据，如果不存在则自动下载
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
@@ -35,7 +37,7 @@ config = {
     # 训练多少次
     "number_iteration": 500,
     # 每次用多少个样本训练
-    "batch_size": 16,
+    "batch_size": 32,
     # 迭代多少次打印一次信息
     "display": 10,
 
@@ -51,11 +53,11 @@ net = [
         # 卷积核个数
         "kernel_number": 2,
         # 卷积核高
-        "kernel_height": 2,
+        "kernel_height": 3,
         # 卷积核宽
-        "kernel_width": 2,
+        "kernel_width": 3,
         # 填充数，1：在图片最外层填充1圈0，2：填充2圈0，以此类推
-        "padding": 1,
+        "padding": 0,
         # 滑动步长，1：水平或垂直方向滑动步长都为1，2：水平或垂直方向滑动步长都为2，以此类推
         "stride": 1,
         # 权重初始化  gaussian/xavier/msra

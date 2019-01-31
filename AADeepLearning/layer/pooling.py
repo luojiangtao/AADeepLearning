@@ -20,7 +20,6 @@ class Pooling:
             "width": (flow_data_shape['width'] - layer['kernel_width']) // layer['stride'] + 1
         }
         return layer, flow_data_shape
-
     @staticmethod
     def forword(flow_data, layer, is_train):
         """
@@ -39,22 +38,20 @@ class Pooling:
         # 池化总输出
         pooling_out = np.zeros((batch_size, channels, output_width, output_height))
         # 开始池化
-        for batch in range(batch_size):  # 遍历输出样本数
-            for channel in range(channels):  # 遍历输出通道数
-                for height in range(output_height):  # 遍历输出高
-                    for width in range(output_width):  # 遍历输出宽
-                        # 滑动窗口截取部分
-                        sliding_window = flow_data[batch][channel][
-                                         height * layer['stride']:height * layer['stride'] + kernel_height,
-                                         width * layer['stride']:width * layer['stride'] + kernel_width
-                                         ]
-                        if 'mode' in layer.keys() and layer['mode'] == 'average':
-                            # 平均池化
-                            pooling_out[batch][channel][height][width] = np.average(sliding_window)
-                        else:
-                            # 默认取最大值
-                            pooling_out[batch][channel][height][width] = np.max(sliding_window)
-
+        for channel in range(channels):  # 遍历输出通道数
+            for height in range(output_height):  # 遍历输出高
+                for width in range(output_width):  # 遍历输出宽
+                    # 滑动窗口截取部分
+                    sliding_window = flow_data[:,channel,
+                                     height * layer['stride']:height * layer['stride'] + kernel_height,
+                                     width * layer['stride']:width * layer['stride'] + kernel_width
+                                     ]
+                    if 'mode' in layer.keys() and layer['mode'] == 'average':
+                        # 平均池化
+                        pooling_out[:,channel,height,width] = np.average(np.average(sliding_window,axis=1),axis=1)
+                    else:
+                        # 默认取最大值
+                        pooling_out[:,channel,height,width] = np.max(np.max(sliding_window,axis=1),axis=1)
 
         return pooling_out, layer
 
@@ -72,29 +69,28 @@ class Pooling:
         kernel_total = kernel_height*kernel_width
         stride = layer['stride']
         output = np.zeros(layer['input'].shape)
-        batch_size = flow_data.shape[0]
-        # np.savetxt("input.csv", flow_data[0][0], delimiter=',')
-        # np.savetxt("forward_input.csv", layer['input'][0][0], delimiter=',')
-
-        for batch in range(batch_size):
-            for channel in range(flow_data.shape[1]):
-                for height in range(flow_data.shape[2]):
-                    for width in range(flow_data.shape[3]):
-                        if 'mode' in layer.keys() and layer['mode'] == 'average':
-                            # 平均池化
-                            output[batch][channel][
-                                             height * stride:height * stride + kernel_height,
-                                             width * stride:width * stride + kernel_width
-                                             ] += flow_data[batch][channel][height][width]/kernel_total
-                        else:
-                            # 滑动窗口截取部分
-                            sliding_window = layer['input'][batch][channel][
-                                             height * stride:height * stride + kernel_height,
-                                             width * stride:width * stride + kernel_width
-                                             ]
-                            # 默认取最大值
-                            max_height, max_width =np.unravel_index(sliding_window.argmax(), sliding_window.shape)
-                            output[batch][channel][max_height+height * stride][max_width+width * stride] += flow_data[batch][channel][height][width]
+        for channel in range(flow_data.shape[1]):
+            for height in range(flow_data.shape[2]):
+                for width in range(flow_data.shape[3]):
+                    if 'mode' in layer.keys() and layer['mode'] == 'average':
+                        # 平均池化
+                        output[:,channel,
+                                         height * stride:height * stride + kernel_height,
+                                         width * stride:width * stride + kernel_width
+                                         ] += flow_data[:,channel,height,width].reshape(-1,1,1)/kernel_total
+                    else:
+                        # 滑动窗口截取部分
+                        sliding_window = layer['input'][:,channel,
+                                         height * stride:height * stride + kernel_height,
+                                         width * stride:width * stride + kernel_width
+                                         ]
+                        # 求最大位置0 1 掩码
+                        mask = np.ones(sliding_window.shape) * (
+                                    np.max(np.max(sliding_window, axis=1), axis=1).reshape(-1, 1, 1) == sliding_window)
+                        output[:,channel,
+                        height * stride:height * stride + kernel_height,
+                        width * stride:width * stride + kernel_width
+                        ] += mask*(flow_data[:,channel,height,width].reshape(-1,1,1))
         return output, layer
 
     @staticmethod

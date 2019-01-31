@@ -47,7 +47,6 @@ class Convolutional:
         return layer, flow_data_shape
 
     @staticmethod
-    # 多核也没问题
     def forword(flow_data, layer, is_train):
         """
         前向传播
