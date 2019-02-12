@@ -33,9 +33,9 @@ config = {
     # 使用动量的梯度下降算法做优化,可以设置这一项，默认值为 0.9 ，一般不需要调整
     "momentum_coefficient": 0.9,
     # 训练多少次
-    "number_iteration": 100,
+    "number_iteration": 500,
     # 每次用多少个样本训练
-    "batch_size": 16,
+    "batch_size": 64,
     # 迭代多少次打印一次信息
     "display": 10,
 
